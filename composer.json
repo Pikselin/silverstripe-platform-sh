@@ -1,0 +1,8 @@
+{
+    "name": "pikselin/platform-sh",
+    "type": "silverstripe-vendormodule",
+    "require": {
+        "php": "^7.4 || ^8",
+        "platformsh/config-reader": "dev-master"
+    }
+}
