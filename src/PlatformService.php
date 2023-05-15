@@ -105,4 +105,24 @@ class PlatformService
             Environment::setVariables($current);
         }
     }
+
+    /**
+     * Check if a variable is what is expected from it.
+     * 
+     * @param $var
+     * @return array|void
+     */
+    public static function test_variable($var)
+    {
+        if (!self::$enabled) {
+            return;
+        }
+        $ssVar = Environment::getEnv($var);
+        $plVar = self::$config_helper->variable($var);
+        return [
+            'Silverstripe' => $ssVar,
+            'Platform' => $plVar,
+            'IsEqual' => hash_equals($ssVar, $plVar)
+        ];
+    }
 }
