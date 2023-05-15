@@ -4,5 +4,10 @@
     "require": {
         "php": "^7.4 || ^8",
         "platformsh/config-reader": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pikselin\\Platform\\": "src/"
+        }
     }
 }
