@@ -2,6 +2,7 @@
 
 namespace Pikselin\Platform;
 
+use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\Core\BaseKernel;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\CoreKernel;
@@ -11,6 +12,11 @@ use SilverStripe\Core\Kernel;
 use SilverStripe\ORM\DB;
 use Platformsh\ConfigReader\Config;
 
+/**
+ * @class Pikselin\Platform\PlatformService
+ *
+ * Helper class to load platform.sh variables in to Silverstripe Environment
+ */
 class PlatformService
 {
     use Configurable;
@@ -30,6 +36,9 @@ class PlatformService
      */
     protected static $env_variables;
 
+    /**
+     * @throws NotFoundExceptionInterface
+     */
     public static function init()
     {
         if (self::$enabled === null) {
@@ -39,12 +48,17 @@ class PlatformService
 
         if (self::$enabled) {
             self::$env_variables = self::config()->get('env_variables');
+            self::set_db();
             self::update_platform_config();
         }
     }
 
-    private static function update_platform_config(){
-
+    /**
+     * Set up the database connection
+     * @return void
+     */
+    private static function set_db()
+    {
         $credentials = self::$config_helper->credentials('database');
 
         /**
@@ -58,10 +72,15 @@ class PlatformService
             'database' => $credentials['path'],
             'type'     => 'MySQLDatabase'
         ]);
+    }
 
-        /**
-         * Insert admin vars.
-         */
+    /**
+     * Set up the variables from PLATFORM_VARIABLES environment
+     * @return void
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    private static function update_platform_config()
+    {
         $variables = self::$config_helper->variables();
 
         $current = Environment::getVariables();
@@ -77,7 +96,7 @@ class PlatformService
             // That we don't want, or Silverstripe doesn't use.
             // This is to prevent any potential accidental information leakage
             foreach ($variables as $key => $value) {
-                if (!in_array(self::$env_variables, $key)) {
+                if (!in_array($key, self::$env_variables)) {
                     unset($variables[$key]);
                 }
             }
