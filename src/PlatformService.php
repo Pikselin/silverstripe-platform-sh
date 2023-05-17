@@ -53,6 +53,12 @@ class PlatformService
      */
     public static function set_db()
     {
+        if (!self::$config_helper) {
+            self::init();
+        }
+        if (!self::$enabled) {
+            return;
+        }
         try {
             $credentials = self::$config_helper->credentials('database');
 
