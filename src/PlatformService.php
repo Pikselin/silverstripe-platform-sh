@@ -104,9 +104,19 @@ class PlatformService
             }
             // Shove EVERYTHING together and make it the new environment
             $current['env'] = array_merge($current['env'], $variables);
-            file_put_contents(TEMP_FOLDER . '/.tempenv', implode("\n\r", $current['env']));
+            file_put_contents(TEMP_FOLDER . '/.tempenv', self::buildEnv($current['env']));
             $loader->loadFile(TEMP_FOLDER . '/.tempenv');
         }
+    }
+    
+    protected static function buildEnv($env)
+    {
+        $env = '';
+        foreach ($env as $key => $value) {
+            $env .= sprintf("%s=%s\n", $key, $value);
+        }
+        
+        return $env;
     }
 
     /**
