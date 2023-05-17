@@ -111,12 +111,12 @@ class PlatformService
     
     protected static function buildEnv($env)
     {
-        $env = '';
+        $newenv = '';
         foreach ($env as $key => $value) {
-            $env .= sprintf("%s=%s\n", $key, $value);
+            $newenv .= sprintf("%s=%s\n", $key, $value);
         }
-        
-        return $env;
+
+        return $newenv;
     }
 
     /**
