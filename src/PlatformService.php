@@ -20,8 +20,6 @@ use Platformsh\ConfigReader\Config;
  */
 class PlatformService
 {
-    use Configurable;
-
     /**
      * @var bool
      */
@@ -33,23 +31,18 @@ class PlatformService
     private static $config_helper;
 
     /**
-     * @var array
-     */
-    protected static $env_variables;
-
-    /**
      * @throws NotFoundExceptionInterface
      */
     public static function init()
     {
-        if (self::$enabled === null) {
+        // Only run if there is no .env file
+        $envFile = filter_input(INPUT_ENV, 'DOCUMENT_ROOT') . '/.env';
+        if (self::$enabled === null || !file_exists($envFile)) {
             self::$config_helper = new Config();
             self::$enabled = self::$config_helper->isValidPlatform();
         }
 
-        if (self::$enabled) {
-            self::$env_variables = self::config()->get('env_variables');
-            self::set_db();
+        if (self::$enabled || !file_exists($envFile)) {
             self::update_platform_config();
         }
     }
@@ -58,21 +51,25 @@ class PlatformService
      * Set up the database connection
      * @return void
      */
-    private static function set_db()
+    public static function set_db()
     {
-        $credentials = self::$config_helper->credentials('database');
+        try {
+            $credentials = self::$config_helper->credentials('database');
 
-        /**
-         * Override Database configuration for Platform.sh
-         * This needs to run against DB, and not from the Environment variables.
-         */
-        DB::setConfig([
-            'server'   => $credentials['host'],
-            'username' => $credentials['username'],
-            'password' => $credentials['password'],
-            'database' => $credentials['path'],
-            'type'     => 'MySQLDatabase'
-        ]);
+            /**
+             * Override Database configuration for Platform.sh
+             * This needs to run against DB, and not from the Environment variables.
+             */
+            DB::setConfig([
+                'server'   => $credentials['host'],
+                'username' => $credentials['username'],
+                'password' => $credentials['password'],
+                'database' => $credentials['path'],
+                'type'     => 'MySQLDatabase'
+            ]);
+        } catch (\Exception $e) {
+            //no-op, ignore platform complaining
+        }
     }
 
     /**
@@ -83,45 +80,24 @@ class PlatformService
     private static function update_platform_config()
     {
         $variables = self::$config_helper->variables();
-
-        $current = Environment::getVariables();
-
-        /** @var CoreKernel $kernel */
-        $kernel = Injector::inst()->get(Kernel::class);
-        $loader = Injector::inst()->get(EnvironmentLoader::class);
-
-        if ($variables) {
-            // Default to LIVE
-            $kernel->setEnvironment($variables['SS_ENVIRONMENT_TYPE'] ?? BaseKernel::LIVE);
-
-            // Run through the variables from platform.sh and remove those
-            // That we don't want, or Silverstripe doesn't use.
-            // This is to prevent any potential accidental information leakage
-            foreach ($variables as $key => $value) {
-                if (!in_array($key, self::$env_variables)) {
-                    unset($variables[$key]);
-                }
-            }
-            // Shove EVERYTHING together and make it the new environment
-            $current['env'] = array_merge($current['env'], $variables);
-            file_put_contents(TEMP_FOLDER . '/.tempenv', self::buildEnv($current['env']));
-            $loader->loadFile(TEMP_FOLDER . '/.tempenv');
-        }
+        self::buildEnv($variables);
     }
-    
-    protected static function buildEnv($env)
-    {
-        $newenv = '';
-        foreach ($env as $key => $value) {
-            $newenv .= sprintf("%s=%s\n", $key, $value);
-        }
 
-        return $newenv;
+    private static function buildEnv($env)
+    {
+        foreach ($env as $key => $value) {
+            try {
+                $newenv = sprintf("%s=%s\n", $key, $value);
+                putenv($newenv);
+            } catch (\Exception $e) {
+                // no-op, putenv failed, continue to the next
+            }
+        }
     }
 
     /**
      * Check if a variable is what is expected from it.
-     * 
+     *
      * @param $var
      * @return array|void
      */
