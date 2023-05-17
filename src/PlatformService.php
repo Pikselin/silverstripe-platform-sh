@@ -104,7 +104,7 @@ class PlatformService
             }
             // Shove EVERYTHING together and make it the new environment
             $current['env'] = array_merge($current['env'], $variables);
-            file_put_contents(TEMP_FOLDER . '/.tempenv');
+            file_put_contents(TEMP_FOLDER . '/.tempenv', implode("\n\r", $current['env']));
             $loader->loadFile(TEMP_FOLDER . '/.tempenv');
         }
     }
