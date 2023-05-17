@@ -7,6 +7,7 @@ use SilverStripe\Core\BaseKernel;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\CoreKernel;
 use SilverStripe\Core\Environment;
+use SilverStripe\Core\EnvironmentLoader;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Core\Kernel;
 use SilverStripe\ORM\DB;
@@ -87,6 +88,7 @@ class PlatformService
 
         /** @var CoreKernel $kernel */
         $kernel = Injector::inst()->get(Kernel::class);
+        $loader = Injector::inst()->get(EnvironmentLoader::class);
 
         if ($variables) {
             // Default to LIVE
@@ -102,7 +104,8 @@ class PlatformService
             }
             // Shove EVERYTHING together and make it the new environment
             $current['env'] = array_merge($current['env'], $variables);
-            Environment::setVariables($current);
+            file_put_contents(TEMP_FOLDER . '/.tempenv');
+            $loader->loadFile(TEMP_FOLDER . '/.tempenv');
         }
     }
 
