@@ -21,6 +21,7 @@ use SilverStripe\Security\DefaultAdminService;
  */
 class PlatformService
 {
+    use Configurable;
     /**
      * @var bool
      */
@@ -30,6 +31,8 @@ class PlatformService
      * @var Config
      */
     private static $config_helper;
+
+    protected static $env_variables;
 
     /**
      * @throws NotFoundExceptionInterface
@@ -99,6 +102,14 @@ class PlatformService
     {
         $variables = self::$config_helper->variables();
         $current = Environment::getVariables();
+        $allowed = self::config()->get('env_variables');
+
+        // Only put allowed variables back in to the env
+        foreach ($variables as $key => $value) {
+            if (!in_array($key, $allowed)) {
+                unset($variables[$key]);
+            }
+        }
 
         $new = array_merge($current['env'], $variables);
         Environment::setVariables($new);
