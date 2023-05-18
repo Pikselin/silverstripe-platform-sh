@@ -2,4 +2,8 @@
 
 #!/bin/bash
 
-export SS_ENVIRONMENT_TYPE=$(echo $PLATFORM_VARIABLES | base64 --decode | jq -r ".SS_ENVIRONMENT_TYPE")
+PLATFORM_VAR=$(echo $PLATFORM_VARIABLES | base64 --decode | jq -r ".SS_ENVIRONMENT_TYPE")
+if [ -z ${PLATFORM_VAR:=live} ];
+ then
+    export SS_ENVIRONMENT_TYPE=$PLATFORM_VAR
+fi
