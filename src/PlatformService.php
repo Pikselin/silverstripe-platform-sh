@@ -44,22 +44,17 @@ class PlatformService
         }
 
         if (self::$enabled || !file_exists($envFile)) {
+            self::set_credentials();
             self::update_platform_config();
         }
     }
 
     /**
-     * Set up the database connection
+     * Set up the database connection & default admin
      * @return void
      */
-    public static function set_credentials()
+    private static function set_credentials()
     {
-        if (self::$enabled === null) {
-            self::init();
-        }
-        if (!self::$enabled) {
-            return;
-        }
         try {
             $credentials = self::$config_helper->credentials('database');
 
@@ -77,9 +72,22 @@ class PlatformService
         } catch (\Exception $e) {
             //no-op, ignore platform complaining
         }
-        $vars = self::$config_helper->variables();
-        DefaultAdminService::clearDefaultAdmin();
-        DefaultAdminService::setDefaultAdmin($vars['SS_DEFAULT_ADMIN_USERNAME'] ?? null, $vars['SS_DEFAULT_ADMIN_PASSWORD'] ?? null);
+        try {
+            // Force clearing and resetting the default admin/password, if they're set
+            $vars = self::$config_helper->variables();
+            if (
+                !empty($vars['SS_DEFAULT_ADMIN_PASSWORD']) &&
+                !empty($vars['SS_DEFAULT_ADMIN_USERNAME'])
+            ) {
+                DefaultAdminService::clearDefaultAdmin();
+                DefaultAdminService::setDefaultAdmin(
+                    $vars['SS_DEFAULT_ADMIN_USERNAME'],
+                    $vars['SS_DEFAULT_ADMIN_PASSWORD']
+                );
+            }
+        } catch (\Exception $e) {
+            // No-op, ignore for now
+        }
     }
 
     /**
@@ -90,19 +98,10 @@ class PlatformService
     private static function update_platform_config()
     {
         $variables = self::$config_helper->variables();
-        self::buildEnv($variables);
-    }
+        $current = Environment::getVariables();
 
-    private static function buildEnv($env)
-    {
-        foreach ($env as $key => $value) {
-            try {
-                $newenv = sprintf("%s=%s\n", $key, $value);
-                putenv($newenv);
-            } catch (\Exception $e) {
-                // no-op, putenv failed, continue to the next
-            }
-        }
+        $new = array_merge($current['env'], $variables);
+        Environment::setVariables($new);
     }
 
     /**
@@ -120,8 +119,8 @@ class PlatformService
         $plVar = self::$config_helper->variable($var);
         return [
             'Silverstripe' => $ssVar,
-            'Platform' => $plVar,
-            'IsEqual' => hash_equals($ssVar, $plVar)
+            'Platform'     => $plVar,
+            'IsEqual'      => hash_equals($ssVar, $plVar)
         ];
     }
 }

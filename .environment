@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#!/bin/bash
+
+export SS_ENVIRONMENT_TYPE=$(echo $PLATFORM_VARIABLES | base64 --decode | jq -r ".SS_ENVIRONMENT_TYPE")
