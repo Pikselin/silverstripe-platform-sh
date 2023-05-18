@@ -78,6 +78,7 @@ class PlatformService
             //no-op, ignore platform complaining
         }
         $vars = self::$config_helper->variables();
+        DefaultAdminService::clearDefaultAdmin();
         DefaultAdminService::setDefaultAdmin($vars['SS_DEFAULT_ADMIN_USERNAME'] ?? null, $vars['SS_DEFAULT_ADMIN_PASSWORD'] ?? null);
     }
 
