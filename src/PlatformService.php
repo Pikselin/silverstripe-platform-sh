@@ -12,6 +12,7 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Core\Kernel;
 use SilverStripe\ORM\DB;
 use Platformsh\ConfigReader\Config;
+use SilverStripe\Security\DefaultAdminService;
 
 /**
  * @class Pikselin\Platform\PlatformService
@@ -36,7 +37,7 @@ class PlatformService
     public static function init()
     {
         // Only run if there is no .env file
-        $envFile = filter_input(INPUT_ENV, 'DOCUMENT_ROOT') . '/.env';
+        $envFile = filter_input(INPUT_ENV, 'DOCUMENT_ROOT') . '/../.env';
         if (self::$enabled === null || !file_exists($envFile)) {
             self::$config_helper = new Config();
             self::$enabled = self::$config_helper->isValidPlatform();
@@ -51,9 +52,9 @@ class PlatformService
      * Set up the database connection
      * @return void
      */
-    public static function set_db()
+    public static function set_credentials()
     {
-        if (!self::$config_helper) {
+        if (self::$enabled === null) {
             self::init();
         }
         if (!self::$enabled) {
@@ -76,6 +77,8 @@ class PlatformService
         } catch (\Exception $e) {
             //no-op, ignore platform complaining
         }
+        $vars = self::$config_helper->variables();
+        DefaultAdminService::setDefaultAdmin($vars['SS_DEFAULT_ADMIN_USERNAME'] ?? null, $vars['SS_DEFAULT_ADMIN_PASSWORD'] ?? null);
     }
 
     /**
