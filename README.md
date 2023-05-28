@@ -19,7 +19,7 @@ In your `_config.php`, init the platform-sh:
 ```php
 <?php
 
-use Pikselin\Platform\PlatformService
+use Pikselin\Platform\PlatformService;
 
 PlatformService::init();
 ```
