@@ -58,38 +58,30 @@ class PlatformService
      */
     private static function set_credentials()
     {
-        try {
-            $credentials = self::$config_helper->credentials('database');
+        $credentials = self::$config_helper->credentials('database');
 
-            /**
-             * Override Database configuration for Platform.sh
-             * This needs to run against DB, and not from the Environment variables.
-             */
-            DB::setConfig([
-                'server'   => $credentials['host'],
-                'username' => $credentials['username'],
-                'password' => $credentials['password'],
-                'database' => $credentials['path'],
-                'type'     => 'MySQLDatabase'
-            ]);
-        } catch (\Exception $e) {
-            //no-op, ignore platform complaining
-        }
-        try {
-            // Force clearing and resetting the default admin/password, if they're set
-            $vars = self::$config_helper->variables();
-            if (
-                !empty($vars['SS_DEFAULT_ADMIN_PASSWORD']) &&
-                !empty($vars['SS_DEFAULT_ADMIN_USERNAME'])
-            ) {
-                DefaultAdminService::clearDefaultAdmin();
-                DefaultAdminService::setDefaultAdmin(
-                    $vars['SS_DEFAULT_ADMIN_USERNAME'],
-                    $vars['SS_DEFAULT_ADMIN_PASSWORD']
-                );
-            }
-        } catch (\Exception $e) {
-            // No-op, ignore for now
+        /**
+         * Override Database configuration for Platform.sh
+         * This needs to run against DB, and not from the Environment variables.
+         */
+        DB::setConfig([
+            'server'   => $credentials['host'],
+            'username' => $credentials['username'],
+            'password' => $credentials['password'],
+            'database' => $credentials['path'],
+            'type'     => 'MySQLDatabase'
+        ]);
+        // Force clearing and resetting the default admin/password, if they're set
+        $vars = self::$config_helper->variables();
+        if (
+            !empty($vars['SS_DEFAULT_ADMIN_PASSWORD']) &&
+            !empty($vars['SS_DEFAULT_ADMIN_USERNAME'])
+        ) {
+            DefaultAdminService::clearDefaultAdmin();
+            DefaultAdminService::setDefaultAdmin(
+                $vars['SS_DEFAULT_ADMIN_USERNAME'],
+                $vars['SS_DEFAULT_ADMIN_PASSWORD']
+            );
         }
     }
 
