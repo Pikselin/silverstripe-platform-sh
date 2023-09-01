@@ -44,3 +44,18 @@ Pikselin\Platform\PlatformService:
   env_variables:
     - MY_ADDITIONAL_KEY
 ```
+
+## Troubleshooting
+
+If you're getting a server error or you find something like this in the logs
+`Uncaught Exception TypeError: "in_array(): Argument #2 ($haystack) must be of type array, null given"`
+
+SSH into server
+```
+platform ssh
+```
+And remove the cache manually
+```
+rm -rf silverstripe-cache/web/*
+```
+Even though it is in the build/deploy hooks, it seems like they need to be run manually.
