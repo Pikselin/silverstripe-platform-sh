@@ -46,7 +46,7 @@ class PlatformService
             self::$enabled = self::$config_helper->isValidPlatform();
         }
 
-        if (self::$enabled || !file_exists($envFile)) {
+        if (self::$enabled) {
             self::set_credentials();
             self::update_platform_config();
         }
