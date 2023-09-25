@@ -45,6 +45,13 @@ Pikselin\Platform\PlatformService:
     - MY_ADDITIONAL_KEY
 ```
 
+If you're adding the `SS_MFA_SECRET_KEY`, you'll have to add this the following line to the .environment file too:
+```yaml
+export SS_MFA_SECRET_KEY=$(echo $PLATFORM_VARIABLES | base64 --decode | jq -r ".SS_MFA_SECRET_KEY")
+```
+
+It's possible other .env variables work that way too.
+
 ## Troubleshooting
 
 If you're getting a server error or you find something like this in the logs
