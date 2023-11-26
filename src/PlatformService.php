@@ -37,7 +37,7 @@ class PlatformService
     /**
      * @throws NotFoundExceptionInterface
      */
-    public static function init()
+    public static function init($dbName = 'path')
     {
         // Only run if there is no .env file
         $envFile = filter_input(INPUT_ENV, 'DOCUMENT_ROOT') . '/../.env';
@@ -56,7 +56,7 @@ class PlatformService
      * Set up the database connection & default admin
      * @return void
      */
-    private static function set_credentials()
+    private static function set_credentials($dbName = 'path')
     {
         $credentials = self::$config_helper->credentials('database');
 
@@ -68,7 +68,7 @@ class PlatformService
             'server'   => $credentials['host'],
             'username' => $credentials['username'],
             'password' => $credentials['password'],
-            'database' => $credentials['path'],
+            'database' => $credentials[$dbName],
             'type'     => 'MySQLDatabase'
         ]);
         // Force clearing and resetting the default admin/password, if they're set
