@@ -1,0 +1,9 @@
+# Add correct sendmail DSN for platform
+#---
+#Name: app-mailer
+#After: 'mailer'
+#---
+#SilverStripe\Core\Injector\Injector:
+#  Symfony\Component\Mailer\Transport\TransportInterface:
+#    constructor:
+#      dsn: 'sendmail://default?command=/usr/sbin/sendmail%20-t%20-i'
